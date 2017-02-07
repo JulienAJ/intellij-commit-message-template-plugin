@@ -23,11 +23,22 @@
 
 package commitmessagetemplate;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.vcs.CommitMessageI;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.ui.Refreshable;
@@ -47,13 +58,28 @@ public class CommitMessageTemplateAction extends AnAction implements DumbAware {
         Project project = e.getRequiredData(CommonDataKeys.PROJECT);
         CommitMessageTemplateConfig config = CommitMessageTemplateConfig.getInstance(project);
 
+        JComboBox<CommitMessageTemplate> templates = new ComboBox<CommitMessageTemplate>();
+        config.getTemplates().stream().forEach(t -> templates.addItem(t));
+        templates.addItem(new CommitMessageTemplate("Test", "Message"));
+
         if (config != null) {
-            String commitMessage = config.getCommitMessage();
-            if (!commitMessage.isEmpty()) {
-                checkinPanel.setCommitMessage(commitMessage);
-            }
+            SwingUtilities.invokeLater(() -> {
+                TemplateChoiceDialog templateChoiceDialog = new TemplateChoiceDialog(project, templates);
+                templateChoiceDialog.show();
+
+                if (templateChoiceDialog.getExitCode() == DialogWrapper.OK_EXIT_CODE) {
+                    submit(checkinPanel, templates);
+                }
+            });
         }
     }
+
+    public void submit(CommitMessageI panel, JComboBox<CommitMessageTemplate> templates) {
+        CommitMessageTemplate template = (CommitMessageTemplate) templates.getSelectedItem();
+        panel.setCommitMessage(template.getCommitMessage());
+
+    }
+
 
 
     @Nullable
@@ -70,5 +96,35 @@ public class CommitMessageTemplateAction extends AnAction implements DumbAware {
             return commitMessageI;
         }
         return null;
+    }
+
+    private class TemplateChoiceDialog extends DialogWrapper implements ActionListener {
+
+        private JComboBox<CommitMessageTemplate> templates;
+        private JLabel commitMessage = new JLabel();
+
+        public TemplateChoiceDialog(Project project, JComboBox<CommitMessageTemplate> templates) {
+            super(project);
+            this.templates = templates;
+            this.templates.addActionListener(this);
+            this.init();
+            this.actionPerformed(null);
+            this.setTitle("Template Chooser");
+            this.setModal(true);
+        }
+
+        @Nullable
+        @Override
+        protected JComponent createCenterPanel() {
+            JPanel jPanel = new JPanel();
+            jPanel.add(templates);
+            jPanel.add(commitMessage);
+            return jPanel;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            this.commitMessage.setText(((CommitMessageTemplate)templates.getSelectedItem()).getCommitMessage());
+        }
     }
 }

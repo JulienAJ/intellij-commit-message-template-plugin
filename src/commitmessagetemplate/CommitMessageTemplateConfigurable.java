@@ -4,14 +4,14 @@ package commitmessagetemplate;
  * Created by matan.goren on 23-Sep-16.
  */
 
+import javax.swing.JComponent;
+
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 
 
 public class CommitMessageTemplateConfigurable implements SearchableConfigurable {
@@ -58,17 +58,17 @@ public class CommitMessageTemplateConfigurable implements SearchableConfigurable
 
     @Override
     public boolean isModified() {
-        return gui.isModified();
+        return true;
     }
 
     @Override
     public void apply() throws ConfigurationException {
-        gui.apply();
+        // TODO
     }
 
     @Override
     public void reset() {
-        gui.reset();
+        // TODO
     }
 
     @Override

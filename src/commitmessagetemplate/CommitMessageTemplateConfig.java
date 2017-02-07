@@ -1,5 +1,7 @@
 package commitmessagetemplate;
 
+import java.util.LinkedList;
+import java.util.List;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
@@ -16,17 +18,10 @@ import org.jetbrains.annotations.Nullable;
 )
 public class CommitMessageTemplateConfig implements PersistentStateComponent<CommitMessageTemplateConfig> {
 
-    private String commitMessage = "";
+    private List<CommitMessageTemplate> commitTemplates = new LinkedList<>();
 
-    String getCommitMessage() {
-        if (commitMessage == null) {
-            commitMessage = "";
-        }
-        return commitMessage;
-    }
-
-    void setCommitMessage(String commitMessage) {
-        this.commitMessage = commitMessage;
+    public CommitMessageTemplateConfig() {
+        // DO NOTHING
     }
 
     @Nullable
@@ -43,5 +38,17 @@ public class CommitMessageTemplateConfig implements PersistentStateComponent<Com
     @Nullable
     static CommitMessageTemplateConfig getInstance(Project project) {
         return ServiceManager.getService(project, CommitMessageTemplateConfig.class);
+    }
+
+    public void addCommitTemplate(CommitMessageTemplate commitMessageTemplate) {
+        this.commitTemplates.add(commitMessageTemplate);
+    }
+
+    public void removeCommitTemplate(CommitMessageTemplate commitMessageTemplate) {
+        this.commitTemplates.remove(commitMessageTemplate);
+    }
+
+    public List<CommitMessageTemplate> getTemplates() {
+        return commitTemplates;
     }
 }
